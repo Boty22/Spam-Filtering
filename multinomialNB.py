@@ -1,5 +1,6 @@
 #The first step is to walk among all directories and file
 import os
+import pandas as pd
 
 def readEmail(filename):
     """input: name of a the txt file
@@ -36,7 +37,9 @@ def extraactVocabulary(samples):
     """
     vocabulary = []
     for sample in samples:
-        for word in sample[1]:
+        #print (sample)
+        for word in sample[0]:
+            #print(word)
             if word not in vocabulary:
                 vocabulary.append(word)
     return vocabulary
@@ -66,11 +69,32 @@ def countTokesnOfTerm(text,t):
             tokens += 1
     return tokens
 
+def countWordsOfDocsInClass(samples,class_name):
+    count = 0
+    for sample in samples:
+        if sample[1] == class_name:
+            count = count + len(sample[0])
+    return count
 
+def trainMultinomialNB(C, D):
+    V = extraactVocabulary(D)
+    B = len(V)
+    N = countDocs(D)
+    prior = pd.DataFrame(index = C ,columns = ['value'])
+    cond_prob = pd.DataFrame(index = C, columns = V)
+    for c in C:
+        Nc = countDocsInClass(D,c)
+        prior['value']['c'] = Nc/N
+        text_c = concatenateTextOfAllDocsInClass(D,c)
+        num_words_tecxt_c = len(text_c)
+        for t in V:
+            Tct = countTokesnOfTerm(text_c,t)
+            cond_prob [t][c] = (Tct + 1)/(num_words_tecxt_c + B)
+    return V,prior,cond_prob
 
+        
 
-
-fsamples = [[1,['lucia','botiquin','ortiz']],[1,['nataly','botiquin','ortiz']],[0,['julio','cesar','botiquin']]]
+fsamples = [[['lucia','botiquin','ortiz'],1],[['nataly','botiquin','ortiz'],1],[['julio','cesar','botiquin'],1]]
 fv = extraactVocabulary(fsamples)
 print(fv)
 
@@ -82,10 +106,15 @@ test_spam_file = '/home/pili/T2/dataset_1/test/spam'
 
 
 data = readDirectory(train_spam_file,1) + readDirectory(train_ham_file,0) 
+
 print(len(data))
 print(countDocsInClass(data,0))
 print(len(concatenateTextOfAllDocsInClass(data,0)))
 ftext = concatenateTextOfAllDocsInClass(data,0)
 print(countTokesnOfTerm(ftext,'love'))
 
+print(countWordsOfDocsInClass(data,0))
 
+C = [0,1]
+
+i,j,k = trainMultinomialNB(C, data)

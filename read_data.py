@@ -28,7 +28,7 @@ def readDirectory(directory, class_name):
     d = []
     for root, dirs, files in os.walk(directory):
         for name in files:
-            d.append([class_name,readEmail(os.path.join(root,name))])
+            d.append([readEmail(os.path.join(root,name)),class_name])
     return d
 
 

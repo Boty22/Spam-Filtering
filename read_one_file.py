@@ -5,6 +5,9 @@
 
 
 def ReadEmail(filename):
+"""input: name of a the txt file
+    output: list of words of the message in the email
+"""
     data=[]
     try:
         fh = open(filename,'r')
@@ -19,7 +22,6 @@ def ReadEmail(filename):
     finally:
         fh.close()
     return data
-
 
 filename = '/home/pili/T2/dataset_1/train/ham/0330.2000-02-04.farmer.ham.txt'
 

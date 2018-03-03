@@ -1,6 +1,7 @@
 #The first step is to walk among all directories and file
 import os
 import pandas as pd
+from math import log10
 
 def readEmail(filename):
     """input: name of a the txt file
@@ -80,11 +81,11 @@ def trainMultinomialNB(C, D):
     V = extraactVocabulary(D)
     B = len(V)
     N = countDocs(D)
-    prior = pd.DataFrame(index = C ,columns = ['value'])
+    prior = pd.DataFrame(index = C ,columns = ['value_prior'])
     cond_prob = pd.DataFrame(index = C, columns = V)
     for c in C:
         Nc = countDocsInClass(D,c)
-        prior['value']['c'] = Nc/N
+        prior['value_prior'][c] = Nc/N
         text_c = concatenateTextOfAllDocsInClass(D,c)
         num_words_tecxt_c = len(text_c)
         for t in V:
@@ -92,7 +93,37 @@ def trainMultinomialNB(C, D):
             cond_prob [t][c] = (Tct + 1)/(num_words_tecxt_c + B)
     return V,prior,cond_prob
 
-        
+
+def extractTockensFromDoc(vocabulary,document_message):
+    """
+    """
+    words_in_vocab = []
+    for word in document_message:
+        if word in vocabulary:
+            words_in_vocab.append(word)
+    return words_in_vocab
+
+def applyMultinomialNB(C,V,prior,cond_prob,d):
+    W = extractTockensFromDoc(V,d)
+    score = pd.DataFrame(index = C ,columns = ['value_score'])
+    max_score = - 1000000000000.0
+    result = -1
+    for c in C:
+        score['value_score'][c] = log10(prior['value_prior'][c])
+        for t in W:
+            score['value_score'][c] += log10(cond_prob[t][c])
+        temp_score = score['value_score'][c]
+        print(temp_score)
+        if temp_score > max_score:
+            result = c
+            max_score = temp_score
+    return result
+
+
+
+
+
+""" ------------------ Testing -------------------- """        
 
 fsamples = [[['lucia','botiquin','ortiz'],1],[['nataly','botiquin','ortiz'],1],[['julio','cesar','botiquin'],1]]
 fv = extraactVocabulary(fsamples)
@@ -105,16 +136,21 @@ test_ham_file = '/home/pili/T2/dataset_1/test/ham'
 test_spam_file = '/home/pili/T2/dataset_1/test/spam'
 
 
+
 data = readDirectory(train_spam_file,1) + readDirectory(train_ham_file,0) 
 
-print(len(data))
-print(countDocsInClass(data,0))
-print(len(concatenateTextOfAllDocsInClass(data,0)))
-ftext = concatenateTextOfAllDocsInClass(data,0)
-print(countTokesnOfTerm(ftext,'love'))
+#print(len(extraactVocabulary(data)))
+#print(countDocsInClass(data,0))
+#print(len(concatenateTextOfAllDocsInClass(data,0)))
+#ftext = concatenateTextOfAllDocsInClass(data,0)
+#print(countTokesnOfTerm(ftext,'love'))
 
-print(countWordsOfDocsInClass(data,0))
+#print(countWordsOfDocsInClass(data,0))
 
 C = [0,1]
 
-i,j,k = trainMultinomialNB(C, data)
+V,prior,cond_prob = trainMultinomialNB(C, data)
+
+result = applyMultinomialNB(C,V,prior,cond_prob,['you','are','cute','and ','you','are','a','bitch'])
+print(result)
+

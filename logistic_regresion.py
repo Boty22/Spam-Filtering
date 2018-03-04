@@ -1,5 +1,5 @@
 import os
-#import pandas as pd
+import pandas as pd
 
 def readEmail(filename):
     """input: name of a the txt file
@@ -77,6 +77,40 @@ def split_training_data(classes_names,samples):
     return first70,last30
 
 
+def createDataFrame(vocabulary,samples):
+    len_samples = len(samples)
+    #print(len_samples)
+    result= pd.DataFrame(0,index = range(len_samples),columns = vocabulary)
+    for sample_index in range(len_samples):
+        print(sample_index)
+        for word in samples[sample_index][0]:
+            if word in vocabulary:
+                result[word][sample_index]=1
+    return result
+
+def createDataStructure(vocabulary,samples):
+    X_matrix = []
+    for sample in samples:
+        X = [1]
+        for word in vocabulary:
+            if word in sample[0]:
+                X.append(1)
+            else:
+                X.append(0)
+        X_matrix.append(X)
+    return(X_matrix)
+    
+def createXvector(vocabulary,message):
+    X=[1]
+    for word in vocabulary:
+        if word in message:
+            X.append(1)
+        else:
+            X.append(0)
+    return X
+
+
+
 """ ------------------ Testing functionality ------------------ """
 
 train_ham_file = '/home/pili/T2/dataset_1/train/ham'
@@ -88,3 +122,13 @@ data_train = readDirectory(train_spam_file,1) + readDirectory(train_ham_file,0)
 C = [0,1]
 
 samples_70_train,samples_30_validation = split_training_data(C,data_train)
+V = extractVocabulary(samples_70_train)
+len_of_W = len(V)+1
+W = [0]*len_of_W
+d = createDataStructure(V,samples_70_train)
+print(len(d))
+print(len(d[3]))
+print(len(V))
+
+
+

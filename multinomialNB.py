@@ -33,7 +33,7 @@ def readDirectory(directory, class_name):
             d.append([readEmail(os.path.join(root,name)),class_name])
     return d
 
-def extraactVocabulary(samples):
+def extractVocabulary(samples):
     """
     """
     vocabulary = []
@@ -78,7 +78,7 @@ def countWordsOfDocsInClass(samples,class_name):
     return count
 
 def trainMultinomialNB(C, D):
-    V = extraactVocabulary(D)
+    V = extractVocabulary(D)
     B = len(V)
     N = countDocs(D)
     prior = pd.DataFrame(index = C ,columns = ['value_prior'])
@@ -113,44 +113,60 @@ def applyMultinomialNB(C,V,prior,cond_prob,d):
         for t in W:
             score['value_score'][c] += log10(cond_prob[t][c])
         temp_score = score['value_score'][c]
-        print(temp_score)
+        #print(temp_score)
         if temp_score > max_score:
             result = c
             max_score = temp_score
     return result
 
 
+def accuracy(C,V,prior,cond_prob,dataset_test):
+    count_correct = 0
+    for sample in dataset_test:
+        temp = applyMultinomialNB(C,V,prior,cond_prob,sample[0])
+        if temp == sample[1]:
+            count_correct += 1
+    return float(count_correct)/len(dataset_test)
 
 
 
-""" ------------------ Testing -------------------- """        
+#print(applyMultinomialNB(C,V,prior,cond_prob,data[200][0]),' and it was',data[200][1])
 
-fsamples = [[['lucia','botiquin','ortiz'],1],[['nataly','botiquin','ortiz'],1],[['julio','cesar','botiquin'],1]]
-fv = extraactVocabulary(fsamples)
-print(fv)
 
+
+""" ------------------ Testing dataset_1 -------------------- """        
 #the name of the files I want to reare are
 train_ham_file = '/home/pili/T2/dataset_1/train/ham'
 train_spam_file = '/home/pili/T2/dataset_1/train/spam'
 test_ham_file = '/home/pili/T2/dataset_1/test/ham'
 test_spam_file = '/home/pili/T2/dataset_1/test/spam'
-
-
-
-data = readDirectory(train_spam_file,1) + readDirectory(train_ham_file,0) 
-
-#print(len(extraactVocabulary(data)))
-#print(countDocsInClass(data,0))
-#print(len(concatenateTextOfAllDocsInClass(data,0)))
-#ftext = concatenateTextOfAllDocsInClass(data,0)
-#print(countTokesnOfTerm(ftext,'love'))
-
-#print(countWordsOfDocsInClass(data,0))
-
+data_train = readDirectory(train_spam_file,1) + readDirectory(train_ham_file,0) 
 C = [0,1]
+V,prior,cond_prob = trainMultinomialNB(C, data_train)
+data_test = readDirectory(test_spam_file,1) + readDirectory(test_ham_file,0)
+print("The accuracy for dataset 1 is: ",accuracy(C,V,prior,cond_prob,data_test))
+""" ------------------ Testing dataset_2 -------------------- """        
+#the name of the files I want to reare are
+train_ham_file = '/home/pili/T2/dataset_2/train/ham'
+train_spam_file = '/home/pili/T2/dataset_2/train/spam'
+test_ham_file = '/home/pili/T2/dataset_2/test/ham'
+test_spam_file = '/home/pili/T2/dataset_2/test/spam'
 
-V,prior,cond_prob = trainMultinomialNB(C, data)
+data_train = readDirectory(train_spam_file,1) + readDirectory(train_ham_file,0) 
+C = [0,1]
+V,prior,cond_prob = trainMultinomialNB(C, data_train)
+data_test = readDirectory(test_spam_file,1) + readDirectory(test_ham_file,0)
+print("The accuracy for dataset 2 is: ",accuracy(C,V,prior,cond_prob,data_test))
+""" ------------------ Testing dataset_3 -------------------- """        
+#the name of the files I want to reare are
+train_ham_file = '/home/pili/T2/dataset_3/train/ham'
+train_spam_file = '/home/pili/T2/dataset_3/train/spam'
+test_ham_file = '/home/pili/T2/dataset_3/test/ham'
+test_spam_file = '/home/pili/T2/dataset_3/test/spam'
+data_train = readDirectory(train_spam_file,1) + readDirectory(train_ham_file,0) 
+C = [0,1]
+V,prior,cond_prob = trainMultinomialNB(C, data_train)
+data_test = readDirectory(test_spam_file,1) + readDirectory(test_ham_file,0)
+print("The accuracy for dataset 3 is: ",accuracy(C,V,prior,cond_prob,data_test))
 
-result = applyMultinomialNB(C,V,prior,cond_prob,['you','are','cute','and ','you','are','a','bitch'])
-print(result)
 

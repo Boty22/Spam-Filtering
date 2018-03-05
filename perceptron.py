@@ -7,8 +7,6 @@ Created on Sun Mar  3 17:31:44 2018
 """
 
 import os
-import math
-import pandas as pd
 
 def readEmail(filename):
     """input: name of a the txt file
@@ -55,23 +53,23 @@ def extractVocabulary(samples):
 def split_70_30(samples):
     total_samples = len(samples)
     split_limit = int(total_samples*7/10)
-    f = []
-    l = []
-    counter = 0
-    for sample in samples:
-        if counter <= split_limit:
-            f.append(sample)
-            counter += 1
-        else:
-            l.append(sample)
-            counter += 1
+    f = samples[0:split_limit+1]
+    l = samples[split_limit+1:]
+#    counter = 0
+#    for sample in samples:
+#        if counter <= split_limit:
+#            f.append(sample)
+#            counter += 1
+#        else:
+#            l.append(sample)
+#            counter += 1
     return f,l 
 
 def filter_data_by_class(samples,class_name):
-    result = []
-    for sample in samples:
-        if sample[1] == class_name:
-            result.append(sample)
+    result = [s for s in samples if s[1]==class_name]
+#    for sample in samples:
+#        if sample[1] == class_name:
+#            result.append(sample)
     return result
 
 def split_training_data(classes_names,samples):
@@ -85,17 +83,6 @@ def split_training_data(classes_names,samples):
         last30 = last30 + l
     return first70,last30
 
-
-def createDataFrame(vocabulary,samples):
-    len_samples = len(samples)
-    #print(len_samples)
-    result= pd.DataFrame(0,index = range(len_samples),columns = vocabulary)
-    for sample_index in range(len_samples):
-        #print(sample_index)
-        for word in samples[sample_index][0]:
-            if word in vocabulary:
-                result[word][sample_index]=1
-    return result
 
 def createDataStructure(vocabulary,samples):
     X_matrix = []
@@ -131,42 +118,22 @@ def dotProductXlW(Xl,W):
         print('wrong dotProductXlW')
     return result
 
-def zig_log_fun(x):
-    """Numerically-stable sigmoid function."""
-    if x >= 0:
-        z = math.exp(-x)
-        return 1 / (1 + z)
+def perceptron_output(Xl,W):
+    product = dotProductXlW(Xl,W)
+    if product > 0:
+        return 1
     else:
-        # if x is less than zero then z will be small, denom can't be
-        # zero because it's 1+z.
-        z = math.exp(x)
-        return z / (1 + z)
-
-def prob_yl_is_1_givenX(Xl,W):
-    WX = dotProductXlW(Xl,W)
-    result = zig_log_fun(WX)
-    return result
-
-def compute_new_W(W,X,Y,eta,lambda_MCAP):
-    n = len(W)
-    new_W = []
-    for i in range(n):
-        temp_w = W[i]
-        for l in range(len(X)):
-            #print("(",l,",",i,")", end =" " )
-            temp_w += eta * X[l][i] * (Y[l] - prob_yl_is_1_givenX(X[l],W))
-        temp_w -= eta * lambda_MCAP * W[i]
-        new_W.append(temp_w)
-    return new_W 
+        return -1
 
 
-def Converge_W(W_init,X,Y,eta,lambda_MCAP,iterarions):
-    W_old = W_init.copy()
-    for i in range(1,iterarions+1):
-        print("Interation i: ")
-        temp = compute_new_W(W_old,X,Y,eta,lambda_MCAP)
-        W_old = temp.copy()
-    return W_old
+def perceptron_taining(X,Y,eta,iterations):
+    W = [0]*len(X)
+    for i in range(iterations):
+        for sample_index in range(len(X)):
+            o = perceptron_output(X[sample_index],W)
+            for n in range(len(W)):
+                W[n] += eta * (Y[sample_index]-o) * X[sample_index][n]
+
 
 
 
@@ -182,13 +149,6 @@ C = [0,1]
 
 samples_70_train,samples_30_validation = split_training_data(C,data_train)
 V = extractVocabulary(samples_70_train)
-len_of_W = len(V)+1
-W_init = [0]*len_of_W
-X, Y = createDataStructure(V,samples_70_train)
-eta = 0.1
-lambda_MCAP = 0
-iterarions = 10
 
-result = Converge_W(W_init,X,Y,eta,lambda_MCAP,iterarions)
 
 

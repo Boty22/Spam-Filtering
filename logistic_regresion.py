@@ -155,6 +155,7 @@ def compute_new_W(W,X,Y,eta,lambda_MCAP):
 def Converge_W(W_init,X,Y,eta,lambda_MCAP,iterarions):
     W_old = W_init.copy()
     for i in range(1,iterarions+1):
+        print("Interation i: ")
         temp = compute_new_W(W_old,X,Y,eta,lambda_MCAP)
         W_old = temp.copy()
     return W_old
